@@ -7,6 +7,7 @@ import struct
 from injection.injection_types import *
 from injection.injection_args import InjArgs
 from tools.utils import record, fp322bin, bin2fp32
+from injection.simulation_parameters import SimulationParameters
 
 def choose_inj_pos(
     target: np.ndarray,
@@ -145,3 +146,27 @@ def choose_inj_pos(
         injection_args.inj_values.append(val_delta)
 
     return mask, delta
+
+
+def get_injection_args(
+    simulation_parameters: SimulationParameters,
+) -> InjArgs:
+    """
+    Get the injection arguments for the simulation parameters.
+    """
+
+    inj_args = InjArgs(
+        inj_replica=simulation_parameters.inj_replica,
+        inj_layer=simulation_parameters.inj_layer,
+        inj_type=simulation_parameters.inj_type,
+        golden_weights=simulation_parameters.golden_weights,
+        golden_output=simulation_parameters.golden_output,
+    )
+    np.random.seed(None)
+    inj_replica = np.random.randint(strategy.num_replicas_in_sync)
+    inj_args.target_worker = inj_replica
+    record(train_recorder, "Inject worker: {}\n".format(inj_replica))
+    record(train_recorder, "Inject layer: {}\n".format(inj_layer))
+
+    if is_input_target(inj_type):
+        target = inputs.values[inj_replica].numpy()

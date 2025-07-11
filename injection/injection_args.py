@@ -12,12 +12,12 @@ class InjArgs():
         mask: np.ndarray | None = None,
         delta: np.ndarray | None = None,
         inj_pos: list[tuple[int, ...]] | None = None,
-        inj_values: list[float] | None = None
+        inj_values: list[float] | None = None,
     ):
         """
         Initialize the injection arguments.
         Args:
-            inj_replica (int): The injection replica.
+            inj_replica (int): The injection replica (needs to be decided by the tpu strategy).
             inj_layer (int): The injection layer.
             inj_type (InjType): The injection type.
             golden_weights (np.ndarray): The golden weights.
@@ -35,8 +35,6 @@ class InjArgs():
         self.inj_type = inj_type
         self.golden_weights = golden_weights
         self.golden_output = golden_output
-
-        # Two numpy arrays
         self.inj_mask = mask
         self.inj_delta = delta
         self.inj_pos = inj_pos
