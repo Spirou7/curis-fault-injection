@@ -8,15 +8,6 @@ from injection.injection_types import *
 from injection.injection_args import InjArgs
 from tools.utils import record, fp322bin, bin2fp32
 
-def inject_data(data, inj_type):
-    if inj_type == InjType.INPUT:
-        return data
-    elif inj_type == InjType.INPUT_16:
-        return data
-    else:
-        raise ValueError(f"Invalid injection type: {inj_type}")
-
- 
 def choose_inj_pos(
     target: np.ndarray,
     inj_type: InjType,
@@ -108,17 +99,17 @@ def choose_inj_pos(
             result = struct.unpack('!f',struct.pack('!I', int(one_bin, 2)))[0]
         return result
 
-    def get_random_correct(target: np.ndarray) -> np.ndarray:
+    def get_random_correct(target: np.ndarray) -> float:
         """
         Get a random correct value by randomly selecting a position in the target tensor and returning the value at that position.
         Args:
             target (np.ndarray): The target tensor.
         Returns:
-            result (np.ndarray): The random correct value.
+            result (float): The random correct value.
         """
         shape = target.shape
         rd_pos = np.unravel_index(np.random.randint(np.prod(shape)), shape)
-        return target[rd_pos]
+        return target[rd_pos].item()
 
     # initialize the mask and delta tensors.
     mask = np.ones(shape)
@@ -146,6 +137,11 @@ def choose_inj_pos(
         delta[pos] = val_delta
 
         record(train_recorder, "Position is {}, Golden data is {}, inject data is {}\n".format(pos, ori_val, val_delta))
+        
+        if injection_args.inj_values is None:
+            injection_args.inj_values = []
+        
+        # add this injection delta to the injection arguments.
         injection_args.inj_values.append(val_delta)
 
     return mask, delta

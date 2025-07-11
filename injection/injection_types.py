@@ -41,13 +41,18 @@ def is_weight_target(inj_type):
 def is_output_target(inj_type):
     return inj_type in [InjType.RD, InjType.RBFLIP, InjType.RD_CORRECT, InjType.ZERO, InjType.N16_RD, InjType.N16_RD_CORRECT, InjType.RD_GLB, InjType.RD_CORRECT_GLB]
 
-# returns (n_inj, n_repeat), where n_inj = the number of places which we can choose to inject into a tensor and n_repeat = number of consecutive injections to place out of these options.
 def num_inj(
     inj_type: InjType
 ) -> tuple[int, int]:
     """
     Returns the number of injection positions and the number of consecutive injections to place out of these options.
+    Args:
+        inj_type (InjType): The injection type.
+    Returns:
+        n_inj (int): The number of injection positions.
+        n_repeat (int): The number of consecutive injections to place out of these options.
     """
+
     if inj_type in [InjType.INPUT, InjType.INPUT_16, InjType.WT, InjType.WT_16, InjType.RD, InjType.RBFLIP, InjType.RD_CORRECT, InjType.ZERO]:
         return 1, 1
     elif inj_type in [InjType.N16_RD, InjType.N16_RD_CORRECT]:
