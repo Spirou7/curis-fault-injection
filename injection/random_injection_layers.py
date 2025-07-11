@@ -1,4 +1,17 @@
-def choose_random_layer(model, phase):
+import numpy as np
+
+def choose_random_layer(
+    model: str,
+    phase: str
+) -> str:
+    """
+    Choose a random layer from the model.
+    Args:
+        model (str): The model name.
+        phase (str): The phase of the model.
+    Returns:
+        layer (str): The random layer.
+    """
 
     resnet18_fwrd_layers = [
             "conv1",
@@ -746,8 +759,6 @@ def choose_random_layer(model, phase):
     if '_' in model:
         model = model[:model.find('_')]
     target_list = table_dict[model + "_" + phase]
-
-    #return target_list[np.random.randint(len(target_list))]
 
     if 'fwrd' in phase:
         return target_list[np.random.randint(len(target_list))]
