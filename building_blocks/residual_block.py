@@ -121,10 +121,10 @@ class ResidualBlock(tf.keras.layers.Layer):
             name=f'{name}_relu2'
         )
         
-        # Track layer information for injection
-        self._layer_outputs = {}
-        self._layer_inputs = {}
-        self._layer_weights = {}
+        # Track layer information for injection - these will be populated during call()
+        self._layer_outputs = None
+        self._layer_inputs = None
+        self._layer_weights = None
     
     def call(self, 
              inputs: tf.Tensor,
@@ -143,10 +143,10 @@ class ResidualBlock(tf.keras.layers.Layer):
         Returns:
             Tuple of (output, layer_inputs, layer_weights, layer_outputs)
         """
-        # Reset layer tracking
-        self._layer_outputs.clear()
-        self._layer_inputs.clear()
-        self._layer_weights.clear()
+        # Initialize layer tracking for this call
+        self._layer_outputs = {}
+        self._layer_inputs = {}
+        self._layer_weights = {}
         
         # Store initial input
         self._layer_inputs[f'{self.name}_input'] = inputs
