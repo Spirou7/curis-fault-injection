@@ -74,25 +74,17 @@ def setup_strategy(use_tpu: bool = False) -> tf.distribute.Strategy:
     Returns:
         Distribution strategy
     """
-    if use_tpu:
-        try:
-            # Try to connect to TPU
-            tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
-            tf.config.experimental_connect_to_cluster(tpu)
-            tf.tpu.experimental.initialize_tpu_system(tpu)
-            strategy = tf.distribute.TPUStrategy(tpu)
-            print(f"Running on TPU with {strategy.num_replicas_in_sync} cores")
-        except ValueError:
-            print("TPU not found, falling back to default strategy")
-            strategy = tf.distribute.get_strategy()
-    else:
-        # Use GPU if available, otherwise CPU
-        if tf.config.list_physical_devices('GPU'):
-            strategy = tf.distribute.MirroredStrategy()
-            print(f"Running on GPU with {strategy.num_replicas_in_sync} devices")
-        else:
-            strategy = tf.distribute.get_strategy()
-            print("Running on CPU")
+
+    strategy = None
+
+    try:
+        tpu = tf.distribute.cluster_resolver.TPUClusterResolver(tpu='local')
+        tf.config.experimental_connect_to_cluster(tpu)
+        tf.tpu.experimental.initialize_tpu_system(tpu)
+        strategy = tf.distribute.TPUStrategy(tpu)
+        print("TPU is running:", tpu.master())
+    except ValueError as e:
+            print("TPU is not avaible:", e)
     
     return strategy
 
