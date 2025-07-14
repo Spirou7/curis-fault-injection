@@ -127,25 +127,6 @@ def create_model_and_optimizer(strategy: tf.distribute.Strategy,
             loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
             metrics=['accuracy']
         )
-        
-        # Initialize optimizer variables by running a dummy forward pass
-        # This ensures all variables are created before TPU compilation
-        dummy_input = tf.zeros((1, 32, 32, 3))
-        dummy_labels = tf.zeros((1,), dtype=tf.int32)
-        
-        with tf.GradientTape() as tape:
-            dummy_outputs = model(dummy_input, training=True)
-            dummy_logits = dummy_outputs['logits']
-            dummy_loss = tf.keras.losses.sparse_categorical_crossentropy(dummy_labels, dummy_logits)
-        
-        print("attempting to initialize optimizer variables")
-        # Initialize optimizer variables
-        dummy_gradients = tape.gradient(dummy_loss, model.trainable_variables)
-
-        print("applying gradients")
-        print(f"model.trainable_variables: {model.trainable_variables}")
-        # print(f"dummy_gradients: {dummy_gradients}")
-        optimizer.apply_gradients(zip(dummy_gradients, model.trainable_variables))
     
     return model, optimizer
 
