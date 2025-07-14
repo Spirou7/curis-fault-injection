@@ -16,6 +16,7 @@ from io import TextIOWrapper
 
 from injection.injection_types import *
 from injection.injection_args import InjArgs, log_injection_info
+from injection.simulation_parameters import SimulationParameters
 
 
 def binary_to_float32(binary_string: str) -> float:
