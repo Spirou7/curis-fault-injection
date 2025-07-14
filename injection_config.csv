@@ -1,0 +1,9 @@
+model,resnet18
+stage,fwrd_inject
+fmodel,RD
+target_worker,1
+target_layer,basicblock_2_basic_0_conv2
+target_epoch,19
+target_step,38
+learning_rate,0.001
+seed,123
