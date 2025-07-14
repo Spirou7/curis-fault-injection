@@ -19,6 +19,11 @@ class SimulationParameters:
         self.inj_replica = inj_replica
         self.inj_layer = inj_layer
         self.inj_type = inj_type
+        self.strategy = strategy
+        self.target_epoch = target_epoch
+        self.target_step = target_step
+        self.learning_rate = learning_rate
+        self.seed = seed
 
 def decide_random_simulation_parameters(
     model: str | None = None,
