@@ -121,10 +121,7 @@ class ResidualBlock(tf.keras.layers.Layer):
             name=f'{name}_relu2'
         )
         
-        # Track layer information for injection - these will be populated during call()
-        self._layer_outputs = None
-        self._layer_inputs = None
-        self._layer_weights = None
+        # These will be populated during call() as local variables
     
     def call(self, 
              inputs: tf.Tensor,
@@ -143,68 +140,68 @@ class ResidualBlock(tf.keras.layers.Layer):
         Returns:
             Tuple of (output, layer_inputs, layer_weights, layer_outputs)
         """
-        # Initialize layer tracking for this call
-        self._layer_outputs = {}
-        self._layer_inputs = {}
-        self._layer_weights = {}
+        # Initialize layer tracking for this call - use local variables
+        layer_outputs = {}
+        layer_inputs = {}
+        layer_weights = {}
         
         # Store initial input
-        self._layer_inputs[f'{self.name}_input'] = inputs
+        layer_inputs[f'{self.name}_input'] = inputs
         
         # Skip connection
         if self.downsample is not None:
-            self._layer_inputs[f'{self.name}_downsample'] = inputs
+            layer_inputs[f'{self.name}_downsample'] = inputs
             residual = self.downsample(inputs, training=training)
-            self._layer_outputs[f'{self.name}_downsample'] = residual
+            layer_outputs[f'{self.name}_downsample'] = residual
         else:
             residual = inputs
         
         # Main path - First convolution block
-        self._layer_inputs[f'{self.name}_conv1'] = inputs
-        self._layer_weights[f'{self.name}_conv1'] = self.conv1.weights
+        layer_inputs[f'{self.name}_conv1'] = inputs
+        layer_weights[f'{self.name}_conv1'] = self.conv1.weights
         x, conv1_out = self.conv1(inputs, training=training, inject=inject, inj_args=inj_args)
-        self._layer_outputs[f'{self.name}_conv1'] = conv1_out
+        layer_outputs[f'{self.name}_conv1'] = conv1_out
         
         # First batch normalization
-        self._layer_inputs[f'{self.name}_bn1'] = x
-        self._layer_weights[f'{self.name}_bn1'] = self.bn1.weights
+        layer_inputs[f'{self.name}_bn1'] = x
+        layer_weights[f'{self.name}_bn1'] = self.bn1.weights
         x = self.bn1(x, training=training, inject=inject, inj_args=inj_args)
-        self._layer_outputs[f'{self.name}_bn1'] = x
+        layer_outputs[f'{self.name}_bn1'] = x
         
         # First ReLU
-        self._layer_inputs[f'{self.name}_relu1'] = x
+        layer_inputs[f'{self.name}_relu1'] = x
         x = self.relu1(x, inject=inject, inj_args=inj_args)
-        self._layer_outputs[f'{self.name}_relu1'] = x
+        layer_outputs[f'{self.name}_relu1'] = x
         
         # Dropout if specified
         if self.dropout1 is not None:
-            self._layer_inputs[f'{self.name}_dropout1'] = x
+            layer_inputs[f'{self.name}_dropout1'] = x
             x = self.dropout1(x, training=training)
-            self._layer_outputs[f'{self.name}_dropout1'] = x
+            layer_outputs[f'{self.name}_dropout1'] = x
         
         # Second convolution block
-        self._layer_inputs[f'{self.name}_conv2'] = x
-        self._layer_weights[f'{self.name}_conv2'] = self.conv2.weights
+        layer_inputs[f'{self.name}_conv2'] = x
+        layer_weights[f'{self.name}_conv2'] = self.conv2.weights
         x, conv2_out = self.conv2(x, training=training, inject=inject, inj_args=inj_args)
-        self._layer_outputs[f'{self.name}_conv2'] = conv2_out
+        layer_outputs[f'{self.name}_conv2'] = conv2_out
         
         # Second batch normalization
-        self._layer_inputs[f'{self.name}_bn2'] = x
-        self._layer_weights[f'{self.name}_bn2'] = self.bn2.weights
+        layer_inputs[f'{self.name}_bn2'] = x
+        layer_weights[f'{self.name}_bn2'] = self.bn2.weights
         x = self.bn2(x, training=training, inject=inject, inj_args=inj_args)
-        self._layer_outputs[f'{self.name}_bn2'] = x
+        layer_outputs[f'{self.name}_bn2'] = x
         
         # Add skip connection
-        self._layer_inputs[f'{self.name}_add'] = (x, residual)
+        layer_inputs[f'{self.name}_add'] = (x, residual)
         x = tf.add(x, residual)
-        self._layer_outputs[f'{self.name}_add'] = x
+        layer_outputs[f'{self.name}_add'] = x
         
         # Final ReLU
-        self._layer_inputs[f'{self.name}_relu2'] = x
+        layer_inputs[f'{self.name}_relu2'] = x
         output = self.relu2(x, inject=inject, inj_args=inj_args)
-        self._layer_outputs[f'{self.name}_relu2'] = output
+        layer_outputs[f'{self.name}_relu2'] = output
         
-        return output, self._layer_inputs, self._layer_weights, self._layer_outputs
+        return output, layer_inputs, layer_weights, layer_outputs
     
     def get_config(self) -> Dict[str, Any]:
         """Get layer configuration."""
