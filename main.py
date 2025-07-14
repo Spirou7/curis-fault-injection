@@ -12,7 +12,7 @@ import tensorflow as tf
 import numpy as np
 from typing import Dict, Any, Optional, Tuple
 
-from config import *
+from .config import *
 from tools.utils import (
     setup_tensorflow_config, load_cifar10_data, prepare_datasets,
     create_learning_rate_schedule, get_optimizer, record
