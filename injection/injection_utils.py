@@ -14,8 +14,8 @@ import numpy as np
 from typing import Tuple, List, Optional, Any, Dict, Union
 from io import TextIOWrapper
 
-from .injection_types import *
-from .injection_args import InjArgs, log_injection_info
+from injection.injection_types import *
+from injection.injection_args import InjArgs, log_injection_info
 
 
 def binary_to_float32(binary_string: str) -> float:
@@ -250,10 +250,10 @@ def get_injection_args(
 
     inj_args.golden_output = layer_outputs.values[0].numpy()
 
-    np_array = np.zeros(strategy.num_replicas_in_sync, dtype=bool)
+    np_array = np.zeros(simulation_parameters.strategy.num_replicas_in_sync, dtype=bool)
     np_array[inj_replica] = True
-    inj_flag_dataset = tf.data.Dataset.from_tensor_slices(np_array).repeat().batch(strategy.num_replicas_in_sync)
-    inj_flag_iterator = iter(strategy.experimental_distribute_dataset(inj_flag_dataset))
+    inj_flag_dataset = tf.data.Dataset.from_tensor_slices(np_array).repeat().batch(simulation_parameters.strategy.num_replicas_in_sync)
+    inj_flag_iterator = iter(simulation_parameters.strategy.experimental_distribute_dataset(inj_flag_dataset))
     inj_flag = next(inj_flag_iterator)
 
     return inj_args

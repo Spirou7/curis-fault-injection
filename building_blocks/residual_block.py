@@ -12,9 +12,9 @@ import tensorflow as tf
 from typing import Dict, Any, Optional, Tuple
 import numpy as np
 
-from .inject_layers import InjectableConv2D, InjectableBatchNormalization, InjectableReLU
-from ..injection.injection_args import InjArgs
-from ..injection.injection_types import InjType
+from building_blocks.inject_layers import InjectableConv2D, InjectableBatchNormalization, InjectableReLU
+from injection.injection_args import InjArgs
+from injection.injection_types import InjType
 
 
 class ResidualBlock(tf.keras.layers.Layer):

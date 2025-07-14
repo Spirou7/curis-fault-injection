@@ -11,7 +11,7 @@ from typing import List, Optional, Any, Union
 import tensorflow as tf
 import numpy as np
 
-from .injection_types import InjType, InjectionState
+from injection.injection_types import InjType, InjectionState
 
 
 @dataclasses.dataclass

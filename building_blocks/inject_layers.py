@@ -13,9 +13,9 @@ import tensorflow as tf
 import numpy as np
 from typing import Optional, Any, Union, List, Tuple
 
-from ..config import PER_REPLICA_BATCH_SIZE
-from ..injection.injection_types import is_input_target, is_weight_target, is_output_target
-from ..injection.injection_args import InjArgs
+from config import PER_REPLICA_BATCH_SIZE
+from injection.injection_types import is_input_target, is_weight_target, is_output_target
+from injection.injection_args import InjArgs
 
 
 def apply_injection_to_tensor(tensor: tf.Tensor, inj_args: InjArgs) -> tf.Tensor:
