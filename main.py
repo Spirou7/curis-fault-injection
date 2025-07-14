@@ -241,6 +241,8 @@ def run_training_with_injection(args: argparse.Namespace) -> None:
     
     # Setup distributed strategy
     strategy = setup_strategy(args.use_tpu)
+
+    print(f"Strategy: {strategy}")
     
     # Load injection configuration
     params = read_injection_config(args.config)
