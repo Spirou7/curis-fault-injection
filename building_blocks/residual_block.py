@@ -125,11 +125,57 @@ class ResidualBlock(tf.keras.layers.Layer):
     
     def call(self, 
              inputs: tf.Tensor,
-             training: Optional[bool] = None,
-             inject: bool = False,
-             inj_args: Optional[InjArgs] = None) -> Tuple[tf.Tensor, Dict[str, tf.Tensor], Dict[str, tf.Tensor], Dict[str, tf.Tensor]]:
+             training: Optional[bool] = None) -> tf.Tensor:
         """
-        Forward pass through the residual block.
+        Standard forward pass through the residual block.
+        
+        Args:
+            inputs: Input tensor
+            training: Training mode flag
+            
+        Returns:
+            Output tensor
+        """
+        # Skip connection
+        if self.downsample is not None:
+            residual = self.downsample(inputs, training=training)
+        else:
+            residual = inputs
+        
+        # Main path - First convolution block
+        x, _ = self.conv1(inputs, training=training, inject=False, inj_args=None)
+        
+        # First batch normalization
+        x = self.bn1(x, training=training, inject=False, inj_args=None)
+        
+        # First ReLU
+        x = self.relu1(x, inject=False, inj_args=None)
+        
+        # Dropout if specified
+        if self.dropout1 is not None:
+            x = self.dropout1(x, training=training)
+        
+        # Second convolution block
+        x, _ = self.conv2(x, training=training, inject=False, inj_args=None)
+        
+        # Second batch normalization
+        x = self.bn2(x, training=training, inject=False, inj_args=None)
+        
+        # Add skip connection
+        x = tf.add(x, residual)
+        
+        # Final ReLU
+        output = self.relu2(x, inject=False, inj_args=None)
+        
+        return output
+    
+    def call_with_injection(self, 
+                           inputs: tf.Tensor,
+                           training: Optional[bool] = None,
+                           inject: bool = False,
+                           inj_args: Optional[InjArgs] = None) -> Tuple[tf.Tensor, Dict[str, tf.Tensor], Dict[str, tf.Tensor], Dict[str, tf.Tensor]]:
+        """
+        Forward pass through the residual block with injection support.
         
         Args:
             inputs: Input tensor
@@ -260,11 +306,31 @@ class BasicBlocks(tf.keras.layers.Layer):
     
     def call(self, 
              inputs: tf.Tensor,
-             training: Optional[bool] = None,
-             inject: bool = False,
-             inj_args: Optional[InjArgs] = None) -> Tuple[tf.Tensor, Dict[str, tf.Tensor], Dict[str, tf.Tensor], Dict[str, tf.Tensor]]:
+             training: Optional[bool] = None) -> tf.Tensor:
         """
-        Forward pass through all residual blocks.
+        Standard forward pass through all residual blocks.
+        
+        Args:
+            inputs: Input tensor
+            training: Training mode flag
+            
+        Returns:
+            Output tensor
+        """
+        x = inputs
+        
+        for block in self.block_layers:
+            x = block(x, training=training)
+        
+        return x
+    
+    def call_with_injection(self, 
+                           inputs: tf.Tensor,
+                           training: Optional[bool] = None,
+                           inject: bool = False,
+                           inj_args: Optional[InjArgs] = None) -> Tuple[tf.Tensor, Dict[str, tf.Tensor], Dict[str, tf.Tensor], Dict[str, tf.Tensor]]:
+        """
+        Forward pass through all residual blocks with injection support.
         
         Args:
             inputs: Input tensor
@@ -282,7 +348,7 @@ class BasicBlocks(tf.keras.layers.Layer):
         combined_outputs = {}
         
         for block in self.block_layers:
-            x, block_inputs, block_weights, block_outputs = block(
+            x, block_inputs, block_weights, block_outputs = block.call_with_injection(
                 x, training=training, inject=inject, inj_args=inj_args
             )
             

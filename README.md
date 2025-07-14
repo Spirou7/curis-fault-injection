@@ -1,3 +1,7 @@
+pip install tensorflow-tpu==2.18.0 --find-links=https://storage.googleapis.com/libtpu-tf-releases/index.html
+pip install tensorflow=2.18.0
+
+
 # CURIS Fault Injection Framework - TensorFlow 2.19.0
 
 A modernized fault injection framework for studying hardware fault tolerance in deep neural network training, updated for TensorFlow 2.19.0.
