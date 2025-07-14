@@ -144,7 +144,7 @@ def create_model_and_optimizer(strategy: tf.distribute.Strategy,
 
         print("applying gradients")
         print(f"model.trainable_variables: {model.trainable_variables}")
-        print(f"dummy_gradients: {dummy_gradients}")
+        # print(f"dummy_gradients: {dummy_gradients}")
         optimizer.apply_gradients(zip(dummy_gradients, model.trainable_variables))
     
     return model, optimizer
