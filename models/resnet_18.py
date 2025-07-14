@@ -86,7 +86,16 @@ class ResNet18(tf.keras.Model):
             name='classifier'
         )
         
-        # Track layer information for injection
+        # Track layer information for injection - initialize as empty
+        self._layer_outputs = {}
+        self._layer_inputs = {}
+        self._layer_weights = {}
+    
+    def build(self, input_shape):
+        """Build the model and initialize tracking dictionaries."""
+        super().build(input_shape)
+        
+        # Initialize tracking dictionaries with expected keys
         self._layer_outputs = {}
         self._layer_inputs = {}
         self._layer_weights = {}
@@ -143,10 +152,10 @@ class ResNet18(tf.keras.Model):
         Returns:
             Dictionary containing outputs and intermediate activations
         """
-        # Reset layer tracking
-        self._layer_outputs.clear()
-        self._layer_inputs.clear()
-        self._layer_weights.clear()
+        # Use local variables for tracking to avoid modifying instance state
+        layer_outputs = {}
+        layer_inputs = {}
+        layer_weights = {}
         
         # Apply data augmentation during training
         if training:
@@ -155,28 +164,28 @@ class ResNet18(tf.keras.Model):
             x = inputs
         
         # Store input
-        self._layer_inputs['input'] = x
+        layer_inputs['input'] = x
         
         # Initial convolution
-        self._layer_inputs['conv1'] = x
-        self._layer_weights['conv1'] = self.conv1.weights
+        layer_inputs['conv1'] = x
+        layer_weights['conv1'] = self.conv1.weights
         x = self.conv1(x)
-        self._layer_outputs['conv1'] = x
+        layer_outputs['conv1'] = x
         
         # Batch normalization and ReLU
-        self._layer_inputs['bn1'] = x
-        self._layer_weights['bn1'] = self.bn1.weights
+        layer_inputs['bn1'] = x
+        layer_weights['bn1'] = self.bn1.weights
         x = self.bn1(x, training=training)
-        self._layer_outputs['bn1'] = x
+        layer_outputs['bn1'] = x
         
-        self._layer_inputs['relu1'] = x
+        layer_inputs['relu1'] = x
         x = self.relu1(x)
-        self._layer_outputs['relu1'] = x
+        layer_outputs['relu1'] = x
         
         # Residual layers
         for layer_name, layer in [('layer1', self.layer1), ('layer2', self.layer2), 
                                  ('layer3', self.layer3), ('layer4', self.layer4)]:
-            self._layer_inputs[layer_name] = x
+            layer_inputs[layer_name] = x
             
             # Apply fault injection if specified
             if inject and inj_args and layer_name in inj_args.inj_layer:
@@ -185,30 +194,30 @@ class ResNet18(tf.keras.Model):
                 pass
             
             x = layer(x, training=training)
-            self._layer_outputs[layer_name] = x
+            layer_outputs[layer_name] = x
         
         # Global average pooling
-        self._layer_inputs['global_pool'] = x
+        layer_inputs['global_pool'] = x
         x = self.global_pool(x)
-        self._layer_outputs['global_pool'] = x
+        layer_outputs['global_pool'] = x
         
         # Dropout if specified
         if self.dropout is not None:
-            self._layer_inputs['dropout'] = x
+            layer_inputs['dropout'] = x
             x = self.dropout(x, training=training)
-            self._layer_outputs['dropout'] = x
+            layer_outputs['dropout'] = x
         
         # Final classification
-        self._layer_inputs['classifier'] = x
-        self._layer_weights['classifier'] = self.classifier.weights
+        layer_inputs['classifier'] = x
+        layer_weights['classifier'] = self.classifier.weights
         logits = self.classifier(x)
-        self._layer_outputs['classifier'] = logits
+        layer_outputs['classifier'] = logits
         
         return {
             'logits': logits,
-            'layer_outputs': self._layer_outputs,
-            'layer_inputs': self._layer_inputs,
-            'layer_weights': self._layer_weights
+            'layer_outputs': layer_outputs,
+            'layer_inputs': layer_inputs,
+            'layer_weights': layer_weights
         }
     
     def get_layer_info(self) -> Dict[str, Any]:
