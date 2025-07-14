@@ -201,15 +201,13 @@ def get_target_tensor(
     # Get the ID of the current replica
     replica_id = replica_context.replica_id_in_sync_group
 
-    # 3. Conditionally access the tensor on the target replica
+    # 3. Conditionally access the tensor on the target replica - TPU compatible
     if tf.equal(replica_id, inj_replica):
-        # Access the local tensor value for this replica
-        target_tensor = dist_value.values[replica_id].numpy()
-        # Or more idiomatically using tf.distribute.MirroredStrategy.experimental_local_results
-        # target_tensor = tf.distribute.get_strategy().experimental_local_results(dist_value)[replica_id]
+        # Access the local tensor value for this replica without .numpy() for TPU compatibility
+        target_tensor = dist_value.values[replica_id]
     else:
         # Other replicas can return an empty tensor
-        target_tensor = np.array([])
+        target_tensor = tf.constant([])
 
     return target_tensor
 
@@ -242,14 +240,15 @@ def get_injection_args(
 
     mask, delta = choose_inj_pos(target, simulation_parameters.inj_type, inj_args)
 
+    # TPU-compatible tensor handling - avoid .numpy() calls
     if type(layer_kernels) == list:
         inj_args.golden_weights = []
         for elem in layer_kernels:
-            inj_args.golden_weights.append(elem.values[0].numpy())
+            inj_args.golden_weights.append(elem.values[0])
     else:
-        inj_args.golden_weights = layer_kernels.values[0].numpy()
+        inj_args.golden_weights = layer_kernels.values[0]
 
-    inj_args.golden_output = layer_outputs.values[0].numpy()
+    inj_args.golden_output = layer_outputs.values[0]
 
     np_array = np.zeros(simulation_parameters.strategy.num_replicas_in_sync, dtype=bool)
     np_array[inj_replica] = True

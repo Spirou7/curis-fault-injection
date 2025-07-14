@@ -44,7 +44,7 @@ class ResNet18(tf.keras.Model):
         # Set random seed for reproducibility
         tf.keras.utils.set_random_seed(seed)
         
-        # Data augmentation layers (applied during training)
+        # Data augmentation layers (TPU-compatible with fixed dimensions)
         self.data_augmentation = tf.keras.Sequential([
             tf.keras.layers.RandomFlip("horizontal", seed=seed),
             tf.keras.layers.ZeroPadding2D(padding=(4, 4)),
