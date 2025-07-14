@@ -12,10 +12,10 @@ import tensorflow as tf
 from typing import Dict, Any, Optional, List, Tuple
 import numpy as np
 
-from ..config import NUM_CLASSES, IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS
-from ..building_blocks.residual_block import ResidualBlock
-from ..injection.injection_args import InjectionArgs
-from ..injection.injection_types import InjType
+from config import NUM_CLASSES, IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS
+from building_blocks.residual_block import ResidualBlock
+from injection.injection_args import InjectionArgs
+from injection.injection_types import InjType
 
 
 class ResNet18(tf.keras.Model):
