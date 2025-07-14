@@ -257,9 +257,9 @@ def run_training_with_injection(args: argparse.Namespace) -> None:
     # Distribute datasets
     train_dataset = strategy.experimental_distribute_dataset(train_dataset)
     test_dataset = strategy.experimental_distribute_dataset(test_dataset)
-    
-    # Create model and optimizer
-    model, optimizer = create_model_and_optimizer(strategy, params)
+    with strategy.scope():
+        # Create model and optimizer
+        model, optimizer = create_model_and_optimizer(strategy, params)
     
     # Setup logging
     os.makedirs(args.output_dir, exist_ok=True)
